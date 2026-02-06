@@ -241,42 +241,49 @@ def _install_skill(skill_path: Path, skill_name: str, install_path: Path, platfo
 
 def _install_for_claude_code(skill_path: Path, skill_name: str, install_path: Path, metadata: dict):
     """安装到 Claude Code"""
-    # 创建 .claude 目录结构
-    claude_dir = install_path / ".claude" / "plugins" / "skills"
-    claude_dir.mkdir(parents=True, exist_ok=True)
-
-    # 复制 SKILL.md
     import shutil
-    skill_file = skill_path / "SKILL.md"
-    dest_file = claude_dir / f"{skill_name}.md"
-    shutil.copy2(skill_file, dest_file)
 
-    click.echo(f"✓ 已复制技能文件到: {dest_file}")
+    # 创建 .claude/skills 目录结构
+    claude_skills_dir = install_path / ".claude" / "skills"
+    claude_skills_dir.mkdir(parents=True, exist_ok=True)
 
-    # 如果有 install.sh 脚本，执行它（使用安全的 subprocess）
+    # 复制整个技能目录
+    dest_skill_dir = claude_skills_dir / skill_name
+    if dest_skill_dir.exists():
+        shutil.rmtree(dest_skill_dir)
+
+    shutil.copytree(skill_path, dest_skill_dir)
+    click.echo(f"✓ 已复制技能目录到: {dest_skill_dir}")
+
+    # 不再需要单独执行 install.sh，因为整个目录已经复制了
+    # 保留这个逻辑以向后兼容
     install_script = skill_path / "scripts" / "install.sh"
     if install_script.exists():
-        click.echo(f"✓ 执行安装脚本...")
-        # 传递技能目录路径作为参数
-        subprocess.run(["bash", str(install_script), str(skill_path)], cwd=install_path, check=True)
+        click.echo(f"✓ 检测到安装脚本（已随目录复制）")
+        # 不执行脚本，因为整个目录已经复制完成
+        # 如果需要执行，可以取消下面的注释
+        # subprocess.run(["bash", str(install_script), str(skill_path)], cwd=install_path, check=True)
 
 
 def _install_for_opencode(skill_path: Path, skill_name: str, install_path: Path, metadata: dict):
     """安装到 OpenCode（待实现）"""
-    click.echo(f"警告: OpenCode 平台支持尚未实现", err=True)
-    click.echo(f"提示: 你可以手动复制技能文件到合适位置", err=True)
+    import shutil
+
+    click.echo(f"警告: OpenCode 平台支持尚未完全实现", err=True)
+    click.echo(f"提示: 复制技能文件，但可能需要手动配置", err=True)
 
     # 创建示例目录结构
-    opencode_dir = install_path / ".opencode" / "skills"
-    opencode_dir.mkdir(parents=True, exist_ok=True)
+    opencode_skills_dir = install_path / ".opencode" / "skills"
+    opencode_skills_dir.mkdir(parents=True, exist_ok=True)
 
-    # 复制技能文件
-    import shutil
-    skill_file = skill_path / "SKILL.md"
-    dest_file = opencode_dir / f"{skill_name}.md"
-    shutil.copy2(skill_file, dest_file)
+    # 复制整个技能目录
+    dest_skill_dir = opencode_skills_dir / skill_name
+    if dest_skill_dir.exists():
+        shutil.rmtree(dest_skill_dir)
 
-    click.echo(f"✓ 已复制技能文件到: {dest_file}")
+    shutil.copytree(skill_path, dest_skill_dir)
+
+    click.echo(f"✓ 已复制技能目录到: {dest_skill_dir}")
     click.echo(f"  (平台适配需要进一步配置)")
 
 

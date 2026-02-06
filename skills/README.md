@@ -120,13 +120,13 @@ winwin-cli skills list --json
 
 ### Claude Code
 - **状态**: ✅ 完整支持
-- **安装路径**: `.claude/plugins/skills/`
-- **说明**: 技能文件会被复制到项目的 `.claude/plugins/skills/` 目录
-- **自动执行**: 如果技能包含 `scripts/install.sh`，会自动执行
+- **安装路径**: `.claude/skills/`
+- **说明**: 整个技能目录（包括 SKILL.md, scripts/, references/, assets/）会被复制到项目的 `.claude/skills/` 目录
+- **目录结构**: 安装后保持原有的目录结构
 
 | 平台 | 状态 | 安装路径 |
 |------|------|----------|
-| Claude Code | ✅ 完整支持 | `.claude/plugins/skills/` |
+| Claude Code | ✅ 完整支持 | `.claude/skills/` |
 | OpenCode | ⚠️ 基础支持 | `.opencode/skills/` |
 
 ## 创建新技能

@@ -67,9 +67,14 @@ class TestSkillsCommand:
             assert result.exit_code == 0
             assert "安装成功" in result.output or "installed successfully" in result.output.lower()
 
-            # 验证文件已复制
-            installed_file = Path(tmpdir) / ".claude" / "plugins" / "skills" / "git-workflow.md"
-            assert installed_file.exists()
+            # 验证技能目录已复制（新的目录结构）
+            installed_dir = Path(tmpdir) / ".claude" / "skills" / "git-workflow"
+            assert installed_dir.exists()
+            assert (installed_dir / "SKILL.md").exists()
+
+            # 验证子目录也被复制了
+            assert (installed_dir / "scripts").exists()
+            assert (installed_dir / "assets").exists()
 
     def test_install_command_interactive_mode(self):
         """测试 install 命令的交互模式"""
@@ -184,8 +189,15 @@ class TestSkillsIntegration:
             )
             assert result.exit_code == 0
 
-            # 4. 验证安装
-            installed_file = Path(tmpdir) / ".claude" / "plugins" / "skills" / "code-review.md"
-            assert installed_file.exists()
-            content = installed_file.read_text()
+            # 4. 验证安装（新的目录结构）
+            installed_dir = Path(tmpdir) / ".claude" / "skills" / "code-review"
+            assert installed_dir.exists()
+
+            # 验证 SKILL.md 文件
+            skill_file = installed_dir / "SKILL.md"
+            assert skill_file.exists()
+            content = skill_file.read_text()
             assert "code-review" in content or "代码审查" in content
+
+            # 验证子目录也被复制
+            assert (installed_dir / "assets").exists()
