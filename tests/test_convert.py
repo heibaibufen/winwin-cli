@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from click.testing import CliRunner
 
-from winwin_cli.convert import convert
+from winwin_cli.convert.cli import convert
 
 
 class TestConvertCommand:
