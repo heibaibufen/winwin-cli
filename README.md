@@ -44,13 +44,13 @@ winwin-cli 是一套专为 AI 使用设计的命令行工具集，提供知识�
 
 ### 🛠️ skills - 技能管理命令
 
-为 Claude Code 等 AI 工具安装和管理技能。
+从 GitHub 仓库为 Claude Code 等 AI 工具安装和管理技能。
 
-- 交互式技能安装
-- 支持多平台（Claude Code、OpenCode）
-- 自动解析技能元数据
-- 自定义安装路径
-- 内置实用技能（图表可视化、CLI 工具集）
+- **从 GitHub 仓库安装** - 支持从远程仓库下载技能
+- **多种安装方式** - 支持完整 URL、简写形式、交互式选择
+- **多平台支持** - Claude Code、OpenCode
+- **自动解析元数据** - 从 SKILL.md 提取技能信息
+- **自定义仓库** - 支持指定自定义技能仓库
 
 ## 🚀 快速开始
 
@@ -133,17 +133,23 @@ winwin-cli convert ./docs --ext .pdf --ext .docx
 **技能管理：**
 
 ```bash
-# 列出所有可用技能
+# 列出所有可用技能（从默认 GitHub 仓库）
 winwin-cli skills list
 
 # 查看技能详情
-winwin-cli skills info vega-lite-charts
+winwin-cli skills info skill-name
 
-# 安装技能到当前目录
-winwin-cli skills install vega-lite-charts
+# 交互式选择并安装技能
+winwin-cli skills install
 
-# 安装到指定项目
-winwin-cli skills install winwin-cli /path/to/project
+# 使用简写形式安装
+winwin-cli skills install skill-name
+
+# 指定仓库安装
+winwin-cli skills install owner/repo/skill-name
+
+# 使用完整 GitHub URL
+winwin-cli skills install https://github.com/owner/repo/tree/main/skill-name
 
 # JSON 格式输出（AI 调用）
 winwin-cli skills list --json
@@ -185,62 +191,111 @@ winwin-cli kb-search search my-kb "查询词" --limit 5
 
 ### skills 详细用法
 
-**交互式安装：**
+**配置默认技能仓库：**
 
 ```bash
-# 启动交互式安装流程
-winwin-cli skills install
+# 通过环境变量设置默认仓库
+export WINWIN_SKILLS_REPO="heibaibufen/winwin-skills"
 
-# 会提示：
-# 1. 选择要安装的技能
-# 2. 选择目标平台（claude-code/opencode）
+# 或在命令中临时指定
+winwin-cli skills list --repo owner/custom-skills
 ```
 
-**直接安装：**
+**列出技能：**
 
 ```bash
-# 基本用法
-winwin-cli skills install <skill-name>
-
-# 指定安装路径
-winwin-cli skills install <skill-name> /path/to/project
-
-# 指定平台
-winwin-cli skills install <skill-name> --platform claude-code
-
-# 完整示例
-winwin-cli skills install vega-lite-charts ./my-project --platform claude-code
-```
-
-**技能信息：**
-
-```bash
-# 查看所有技能
+# 从默认仓库列出所有技能
 winwin-cli skills list
 
-# JSON 格式（适合 AI 解析）
-winwin-cli skills list --json
+# 指定分支
+winwin-cli skills list --branch develop
 
-# 查看技能详情
-winwin-cli skills info vega-lite-charts
+# 指定仓库
+winwin-cli skills list --repo owner/custom-skills
+
+# JSON 格式输出
+winwin-cli skills list --json
 ```
 
-**内置技能：**
+**查看技能信息：**
 
-- **vega-lite-charts** - 图表可视化生成
-  - 饼图/环形图（占比分析）
-  - 四象限图/波士顿矩阵（分类定位）
-  - 得失分析柱状图（增长对比）
-  - 竞争格局分析图（多品牌对比）
-  - 中国地图（地理数据可视化）
-  - 自动选择图表类型
+```bash
+# 使用技能名称（默认仓库）
+winwin-cli skills info skill-name
 
-- **winwin-cli** - CLI 工具集技能
-  - 文档转换（PDF/Office/图片/音频转 Markdown）
-  - 知识库检索（基于 BM25 的全文搜索）
-  - 技能管理（安装、列出、查看技能）
+# 指定仓库
+winwin-cli skills info skill-name --repo owner/custom-skills
 
-更多技能信息请参阅 [skills/README.md](skills/README.md)
+# 指定分支
+winwin-cli skills info skill-name --branch feature-branch
+```
+
+**安装技能：**
+
+```bash
+# 方式 1: 交互式选择
+winwin-cli skills install
+
+# 方式 2: 使用技能名称（默认仓库）
+winwin-cli skills install skill-name
+
+# 方式 3: 指定仓库和技能
+winwin-cli skills install owner/repo/skill-name
+
+# 方式 4: 使用完整 GitHub URL
+winwin-cli skills install https://github.com/owner/repo/tree/main/skill-name
+
+# 指定安装路径
+winwin-cli skills install skill-name /path/to/project
+
+# 指定平台
+winwin-cli skills install skill-name --platform claude-code
+
+# 指定分支
+winwin-cli skills install skill-name --branch develop
+
+# 覆盖默认仓库
+winwin-cli skills install skill-name --repo owner/custom-repo
+
+# 完整示例
+winwin-cli skills install my-skill ./my-project --platform claude-code --branch dev
+```
+
+**技能格式要求：**
+
+技能仓库支持按分类组织，结构如下：
+
+```
+owner/skills-repo/
+├── category1/          # 分类目录（如：heibai、xurui）
+│   ├── skill-a/       # 具体技能目录
+│   │   └── SKILL.md   # 必需：技能定义文件
+│   └── skill-b/
+│       └── SKILL.md
+├── category2/
+│   └── skill-c/
+│       └── SKILL.md
+└── README.md
+```
+
+每个技能目录需要包含：
+- `SKILL.md` - 技能定义文件，包含 YAML 前置元数据
+- 可选的子目录（scripts、references、assets 等）
+
+示例 SKILL.md：
+
+```markdown
+---
+name: my-skill
+description: 我的技能描述
+version: 1.0.0
+author: Your Name
+---
+
+# 技能使用说明
+
+...
+```
 
 ## 🏗️ 项目结构
 
@@ -253,7 +308,7 @@ winwin-cli/
 │   │   └── cli.py       # convert 命令
 │   ├── skills/          # 技能管理模块
 │   │   ├── __init__.py
-│   │   └── cli.py       # skills 命令
+│   │   └── cli.py       # skills 命令（从 GitHub 仓库安装）
 │   └── kb_search/       # 知识库检索模块
 │       ├── cli.py       # kb-search 命令组
 │       ├── config.py    # 配置管理
@@ -271,8 +326,6 @@ winwin-cli/
 │           ├── disable.py
 │           ├── status.py
 │           └── info.py
-├── skills/              # 技能定义目录
-│   └── README.md        # 技能使用指南
 ├── tests/               # 测试文件
 │   ├── test_convert.py
 │   ├── test_kb_search_*.py
@@ -378,7 +431,7 @@ twine upload dist/*
 
 - [知识库配置示例](knowledge-bases.yaml)
 - [Claude Code 开发指南](CLAUDE.md)
-- [技能使用指南](skills/README.md)
+- [默认技能仓库](https://github.com/heibaibufen/winwin-skills)
 - [项目 Issue](https://github.com/your-username/winwin-cli/issues)
 
 ## 💡 使用场景
