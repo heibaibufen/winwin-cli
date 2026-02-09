@@ -50,7 +50,7 @@ winwin-cli 是一套专为 AI 使用设计的命令行工具集，提供知识�
 - 支持多平台（Claude Code、OpenCode）
 - 自动解析技能元数据
 - 自定义安装路径
-- 内置实用技能（Git 工作流、代码审查）
+- 内置实用技能（图表可视化、CLI 工具集）
 
 ## 🚀 快速开始
 
@@ -137,13 +137,13 @@ winwin-cli convert ./docs --ext .pdf --ext .docx
 winwin-cli skills list
 
 # 查看技能详情
-winwin-cli skills info git-workflow
+winwin-cli skills info vega-lite-charts
 
 # 安装技能到当前目录
-winwin-cli skills install git-workflow
+winwin-cli skills install vega-lite-charts
 
 # 安装到指定项目
-winwin-cli skills install code-review /path/to/project
+winwin-cli skills install winwin-cli /path/to/project
 
 # JSON 格式输出（AI 调用）
 winwin-cli skills list --json
@@ -209,7 +209,7 @@ winwin-cli skills install <skill-name> /path/to/project
 winwin-cli skills install <skill-name> --platform claude-code
 
 # 完整示例
-winwin-cli skills install git-workflow ./my-project --platform claude-code
+winwin-cli skills install vega-lite-charts ./my-project --platform claude-code
 ```
 
 **技能信息：**
@@ -222,22 +222,23 @@ winwin-cli skills list
 winwin-cli skills list --json
 
 # 查看技能详情
-winwin-cli skills info git-workflow
+winwin-cli skills info vega-lite-charts
 ```
 
 **内置技能：**
 
-- **git-workflow** - Git 工作流助手
-  - 约定式提交规范
-  - 分支管理策略
-  - PR 检查清单
-  - 工作流最佳实践
+- **vega-lite-charts** - 图表可视化生成
+  - 饼图/环形图（占比分析）
+  - 四象限图/波士顿矩阵（分类定位）
+  - 得失分析柱状图（增长对比）
+  - 竞争格局分析图（多品牌对比）
+  - 中国地图（地理数据可视化）
+  - 自动选择图表类型
 
-- **code-review** - 代码审查助手
-  - 代码质量检查
-  - 安全性审查
-  - 性能优化建议
-  - 审查报告模板
+- **winwin-cli** - CLI 工具集技能
+  - 文档转换（PDF/Office/图片/音频转 Markdown）
+  - 知识库检索（基于 BM25 的全文搜索）
+  - 技能管理（安装、列出、查看技能）
 
 更多技能信息请参阅 [skills/README.md](skills/README.md)
 
@@ -271,16 +272,6 @@ winwin-cli/
 │           ├── status.py
 │           └── info.py
 ├── skills/              # 技能定义目录
-│   ├── git-workflow/    # Git 工作流技能
-│   │   ├── SKILL.md
-│   │   ├── scripts/
-│   │   ├── references/
-│   │   └── assets/
-│   ├── code-review/     # 代码审查技能
-│   │   ├── SKILL.md
-│   │   ├── scripts/
-│   │   ├── references/
-│   │   └── assets/
 │   └── README.md        # 技能使用指南
 ├── tests/               # 测试文件
 │   ├── test_convert.py
@@ -413,8 +404,8 @@ winwin-cli convert ./documents --ext .docx --ext .pptx --ext .xlsx
 
 ```bash
 # 为团队项目安装标准技能
-winwin-cli skills install git-workflow ./team-project --platform claude-code
-winwin-cli skills install code-review ./team-project --platform claude-code
+winwin-cli skills install vega-lite-charts ./team-project --platform claude-code
+winwin-cli skills install winwin-cli ./team-project --platform claude-code
 ```
 
 ---

@@ -1,0 +1,277 @@
+{
+  "standard_stacked_bar": {
+    "name": "标准堆叠柱状图（绝对值）",
+    "description": "展示多个品牌在不同时期的市场份额绝对值堆叠，可以看出总量变化和结构变化",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": {
+        "text": "乳制品行业竞争格局分析",
+        "subtitle": "Top 5 集团市场份额对比 (24Q4 vs 25Q4)",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "values": [
+          {"period": "24Q4", "brand": "君乐宝", "share": 0.234},
+          {"period": "24Q4", "brand": "蒙牛", "share": 0.196},
+          {"period": "24Q4", "brand": "伊利股份", "share": 0.175},
+          {"period": "24Q4", "brand": "光明乳业", "share": 0.058},
+          {"period": "24Q4", "brand": "新乳业", "share": 0.054},
+          {"period": "24Q4", "brand": "其他", "share": 0.283},
+          {"period": "25Q4", "brand": "君乐宝", "share": 0.232},
+          {"period": "25Q4", "brand": "伊利股份", "share": 0.186},
+          {"period": "25Q4", "brand": "蒙牛", "share": 0.167},
+          {"period": "25Q4", "brand": "新乳业", "share": 0.060},
+          {"period": "25Q4", "brand": "光明乳业", "share": 0.055},
+          {"period": "25Q4", "brand": "其他", "share": 0.300}
+        ]
+      },
+      "transform": [
+        {"calculate": "datum.share * 100", "as": "percent"}
+      ],
+      "encoding": {
+        "x": {
+          "field": "period",
+          "type": "nominal",
+          "title": "时期",
+          "axis": {"labelAngle": 0, "labelFontSize": 14}
+        },
+        "y": {
+          "field": "percent",
+          "type": "quantitative",
+          "title": "市场份额 (%)",
+          "axis": {"format": ".1f"}
+        },
+        "color": {
+          "field": "brand",
+          "type": "nominal",
+          "legend": {"orient": "right", "title": "集团"},
+          "sort": {"field": "percent", "op": "sum", "order": "descending"}
+        }
+      },
+      "layer": [
+        {
+          "mark": {"type": "bar", "opacity": 0.9},
+          "encoding": {
+            "tooltip": [
+              {"field": "period", "title": "时期"},
+              {"field": "brand", "title": "集团"},
+              {"field": "share", "title": "市场份额", "format": ".1%"},
+              {"field": "percent", "title": "份额 (%)", "format": ".1f"}
+            ]
+          }
+        },
+        {
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "middle",
+            "fontSize": 11
+          },
+          "encoding": {
+            "text": {"field": "percent", "type": "quantitative", "format": ".1f"},
+            "opacity": {
+              "condition": {"test": "datum.percent > 3", "value": 1},
+              "value": 0
+            }
+          }
+        }
+      ],
+      "width": 700,
+      "height": 500
+    }
+  },
+  "percentage_stacked_bar": {
+    "name": "百分比堆叠柱状图（100%堆叠，推荐）",
+    "description": "展示各品牌在不同时期的市场份额占比（总和为100%），按份额大小排序堆叠",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "title": {
+        "text": "乳制品行业竞争格局分析",
+        "subtitle": "Top 5 集团市场份额对比 (24Q4 vs 25Q4)",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "values": [
+          {"period": "24Q4", "brand": "君乐宝", "share": 0.234},
+          {"period": "24Q4", "brand": "蒙牛", "share": 0.196},
+          {"period": "24Q4", "brand": "伊利股份", "share": 0.175},
+          {"period": "24Q4", "brand": "光明乳业", "share": 0.058},
+          {"period": "24Q4", "brand": "新乳业", "share": 0.054},
+          {"period": "24Q4", "brand": "其他", "share": 0.283},
+          {"period": "25Q4", "brand": "君乐宝", "share": 0.232},
+          {"period": "25Q4", "brand": "伊利股份", "share": 0.186},
+          {"period": "25Q4", "brand": "蒙牛", "share": 0.167},
+          {"period": "25Q4", "brand": "新乳业", "share": 0.060},
+          {"period": "25Q4", "brand": "光明乳业", "share": 0.055},
+          {"period": "25Q4", "brand": "其他", "share": 0.300}
+        ]
+      },
+      "transform": [
+        {
+          "joinaggregate": [{"op": "sum", "field": "share", "as": "totalShare"}],
+          "groupby": ["brand"]
+        },
+        {
+          "window": [{"op": "row_number", "as": "rank"}],
+          "sort": [{"field": "totalShare", "order": "descending"}]
+        },
+        {
+          "calculate": "datum.rank * -1",
+          "as": "orderValue"
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "period",
+          "type": "ordinal",
+          "title": "时期",
+          "axis": {"labelAngle": 0, "labelFontSize": 14}
+        }
+      },
+      "layer": [
+        {
+          "mark": {"type": "bar", "size": 40, "opacity": 0.9},
+          "encoding": {
+            "y": {
+              "aggregate": "sum",
+              "field": "share",
+              "stack": "normalize",
+              "title": "市场份额",
+              "axis": {"format": ".0%"}
+            },
+            "color": {
+              "field": "brand",
+              "type": "nominal",
+              "title": "集团",
+              "legend": {"orient": "right"}
+            },
+            "order": {"field": "orderValue"}
+          }
+        },
+        {
+          "mark": {
+            "type": "text",
+            "color": "white",
+            "opacity": 0.9,
+            "fontSize": 12,
+            "fontWeight": "bold"
+          },
+          "encoding": {
+            "y": {
+              "aggregate": "sum",
+              "field": "share",
+              "stack": "normalize",
+              "bandPosition": 0.5
+            },
+            "text": {
+              "aggregate": "sum",
+              "field": "share",
+              "format": ".1%"
+            },
+            "detail": {
+              "field": "brand"
+            },
+            "opacity": {
+              "condition": {"test": "datum.sum_share > 0.05", "value": 0.9},
+              "value": 0
+            },
+            "order": {"field": "orderValue"},
+            "tooltip": [
+              {"field": "period", "title": "时期"},
+              {"field": "brand", "title": "集团"},
+              {"aggregate": "sum", "field": "share", "title": "市场份额", "format": ".1%"}
+            ]
+          }
+        }
+      ],
+      "width": 600,
+      "height": 400
+    }
+  },
+  "grouped_bar": {
+    "name": "分组柱状图（并排对比）",
+    "description": "不堆叠，直接并排对比各品牌份额，适合品牌数量少（<8个）的情况",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "title": {
+        "text": "乳制品行业竞争格局分析",
+        "subtitle": "Top 5 集团市场份额对比 (24Q4 vs 25Q4)",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "values": [
+          {"period": "24Q4", "brand": "君乐宝", "share": 0.234},
+          {"period": "24Q4", "brand": "蒙牛", "share": 0.196},
+          {"period": "24Q4", "brand": "伊利股份", "share": 0.175},
+          {"period": "24Q4", "brand": "光明乳业", "share": 0.058},
+          {"period": "24Q4", "brand": "新乳业", "share": 0.054},
+          {"period": "25Q4", "brand": "君乐宝", "share": 0.232},
+          {"period": "25Q4", "brand": "伊利股份", "share": 0.186},
+          {"period": "25Q4", "brand": "蒙牛", "share": 0.167},
+          {"period": "25Q4", "brand": "新乳业", "share": 0.060},
+          {"period": "25Q4", "brand": "光明乳业", "share": 0.055}
+        ]
+      },
+      "transform": [
+        {"calculate": "datum.share * 100", "as": "percent"}
+      ],
+      "encoding": {
+        "x": {
+          "field": "brand",
+          "type": "nominal",
+          "title": "集团",
+          "axis": {"labelAngle": -45, "labelFontSize": 12},
+          "sort": {"field": "share", "op": "sum", "order": "descending"}
+        },
+        "y": {
+          "field": "percent",
+          "type": "quantitative",
+          "title": "市场份额 (%)",
+          "axis": {"format": ".1f"}
+        },
+        "xOffset": {
+          "field": "period",
+          "type": "nominal"
+        },
+        "color": {
+          "field": "period",
+          "type": "nominal",
+          "legend": {"orient": "right", "title": "时期"}
+        }
+      },
+      "layer": [
+        {
+          "mark": {"type": "bar", "opacity": 0.9},
+          "encoding": {
+            "tooltip": [
+              {"field": "period", "title": "时期"},
+              {"field": "brand", "title": "集团"},
+              {"field": "share", "title": "市场份额", "format": ".1%"}
+            ]
+          }
+        },
+        {
+          "mark": {
+            "type": "text",
+            "align": "center",
+            "baseline": "bottom",
+            "dy": -5,
+            "fontSize": 11,
+            "fontWeight": "bold"
+          },
+          "encoding": {
+            "text": {"field": "percent", "type": "quantitative", "format": ".1f"}
+          }
+        }
+      ],
+      "width": 800,
+      "height": 500
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "standard_pie_chart": {
+    "name": "标准饼图",
+    "description": "标准的饼图模板，包含外部标签和 tooltip 百分比显示",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "description": "品类宝品牌销售额占比饼图",
+      "title": {
+        "text": "品类宝品牌销售额占比（Top 5 品牌）",
+        "subtitle": "本期销售额分布统计",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "values": [
+          {"brand": "其他品牌", "sales": 305473106.00, "total": 649163478.20},
+          {"brand": "恒顺", "sales": 124125064.95, "total": 649163478.20},
+          {"brand": "海天", "sales": 74070742.34, "total": 649163478.20},
+          {"brand": "紫林", "sales": 69776069.35, "total": 649163478.20},
+          {"brand": "千禾", "sales": 40356664.23, "total": 649163478.20},
+          {"brand": "保宁", "sales": 35360831.33, "total": 649163478.20}
+        ]
+      },
+      "transform": [
+        {"calculate": "datum.sales / datum.total", "as": "percent"}
+      ],
+      "encoding": {
+        "theta": {"field": "sales", "type": "quantitative", "stack": true},
+        "color": {"field": "brand", "type": "nominal", "legend": null}
+      },
+      "layer": [{
+        "mark": {"type": "arc", "outerRadius": 120},
+        "encoding": {
+          "tooltip": [
+            {"field": "brand", "type": "nominal", "title": "品牌"},
+            {"field": "sales", "type": "quantitative", "title": "销售额", "format": ","},
+            {"field": "percent", "type": "quantitative", "title": "占比", "format": ".1%"}
+          ]
+        }
+      }, {
+        "mark": {"type": "text", "radius": 150, "fontSize": 12},
+        "encoding": {
+          "text": {"field": "brand", "type": "nominal"}
+        }
+      }]
+    }
+  },
+  "donut_chart": {
+    "name": "甜甜圈图（环形图）",
+    "description": "环形区域显示百分比，外部显示品牌名",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "title": {
+        "text": "品牌销售额占比甜甜圈图",
+        "subtitle": "环形区域显示百分比",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "values": [
+          {"brand": "品牌A", "value": 100, "total": 500},
+          {"brand": "品牌B", "value": 200, "total": 500},
+          {"brand": "品牌C", "value": 150, "total": 500},
+          {"brand": "品牌D", "value": 50, "total": 500}
+        ]
+      },
+      "transform": [
+        {"calculate": "datum.value / datum.total", "as": "percent"}
+      ],
+      "encoding": {
+        "theta": {"field": "value", "type": "quantitative", "stack": true},
+        "color": {"field": "brand", "type": "nominal", "legend": null}
+      },
+      "layer": [
+        {
+          "mark": {"type": "arc", "outerRadius": 120, "innerRadius": 70}
+        },
+        {
+          "mark": {"type": "text", "radius": 95, "fontSize": 12, "fontWeight": "bold"},
+          "encoding": {"text": {"field": "percent", "type": "quantitative", "format": ".1%"}}
+        },
+        {
+          "mark": {"type": "text", "radius": 150, "fontSize": 12},
+          "encoding": {"text": {"field": "brand", "type": "nominal"}}
+        }
+      ]
+    }
+  },
+  "tooltip_with_joinaggregate": {
+    "name": "使用 joinaggregate 计算百分比",
+    "description": "使用 joinaggregate 计算总和，然后在 tooltip 中显示百分比",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "data": {
+        "values": [
+          {"brand": "品牌A", "sales": 100},
+          {"brand": "品牌B", "sales": 200},
+          {"brand": "品牌C", "sales": 150}
+        ]
+      },
+      "transform": [
+        {"joinaggregate": [{"field": "sales", "op": "sum", "as": "total"}]},
+        {"calculate": "datum.sales / datum.total", "as": "percent"}
+      ],
+      "mark": {"type": "arc", "outerRadius": 120},
+      "encoding": {
+        "theta": {"field": "sales", "type": "quantitative", "stack": true},
+        "color": {"field": "brand", "type": "nominal"},
+        "tooltip": [
+          {"field": "brand", "type": "nominal", "title": "品牌"},
+          {"field": "sales", "type": "quantitative", "title": "销售额"},
+          {"field": "percent", "type": "quantitative", "title": "占比", "format": ".1%"}
+        ]
+      }
+    }
+  }
+}

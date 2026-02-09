@@ -1,0 +1,388 @@
+{
+  "basic_china_map": {
+    "name": "标准中国地图",
+    "description": "基础中国地图，显示省份轮廓和边界",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "width": 800,
+      "height": 600,
+      "title": {
+        "text": "中国地图",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "url": "https://unpkg.com/cn-atlas/cn-atlas.json",
+        "format": {
+          "type": "topojson",
+          "feature": "provinces"
+        }
+      },
+      "projection": {
+        "type": "mercator",
+        "center": [104, 35],
+        "scale": 650
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#e6f2ff",
+        "stroke": "#666",
+        "strokeWidth": 0.5
+      },
+      "encoding": {
+        "tooltip": [
+          {"field": "properties.地名", "type": "nominal", "title": "简称"},
+          {"field": "properties.区划码", "type": "nominal", "title": "区划码"}
+        ]
+      }
+    }
+  },
+  "heatmap_by_sales": {
+    "name": "销售热力图",
+    "description": "按销售额着色的中国地图，显示各省份销售数据分布",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "width": 800,
+      "height": 600,
+      "title": {
+        "text": "全国销售额分布图",
+        "subtitle": "按省份销售额着色",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "url": "https://unpkg.com/cn-atlas/cn-atlas.json",
+        "format": {
+          "type": "topojson",
+          "feature": "provinces"
+        }
+      },
+      "transform": [
+        {
+          "lookup": "properties.地名",
+          "from": {
+            "data": {
+              "values": [
+                {"province": "北京市", "sales": 5000000},
+                {"province": "上海市", "sales": 8000000},
+                {"province": "广东省", "sales": 12000000},
+                {"province": "浙江省", "sales": 7000000},
+                {"province": "江苏省", "sales": 9500000},
+                {"province": "四川省", "sales": 4500000},
+                {"province": "湖北省", "sales": 3800000},
+                {"province": "河南省", "sales": 3200000},
+                {"province": "福建省", "sales": 2900000},
+                {"province": "湖南省", "sales": 2700000},
+                {"province": "安徽省", "sales": 2500000},
+                {"province": "陕西省", "sales": 2300000},
+                {"province": "重庆市", "sales": 3500000},
+                {"province": "天津市", "sales": 2800000},
+                {"province": "江西省", "sales": 2100000},
+                {"province": "广西壮族自治区", "sales": 2400000},
+                {"province": "云南省", "sales": 2200000},
+                {"province": "辽宁省", "sales": 3600000},
+                {"province": "内蒙古自治区", "sales": 1800000},
+                {"province": "山西省", "sales": 2000000},
+                {"province": "吉林省", "sales": 1900000},
+                {"province": "贵州省", "sales": 1700000},
+                {"province": "新疆维吾尔自治区", "sales": 1600000},
+                {"province": "甘肃省", "sales": 1500000},
+                {"province": "黑龙江省", "sales": 2100000},
+                {"province": "海南省", "sales": 800000},
+                {"province": "宁夏回族自治区", "sales": 700000},
+                {"province": "青海省", "sales": 600000},
+                {"province": "西藏自治区", "sales": 500000}
+              ]
+            },
+            "key": "province",
+            "fields": ["sales"]
+          }
+        }
+      ],
+      "projection": {
+        "type": "mercator",
+        "center": [104, 35],
+        "scale": 650
+      },
+      "mark": {
+        "type": "geoshape",
+        "stroke": "#fff",
+        "strokeWidth": 0.5
+      },
+      "encoding": {
+        "color": {
+          "field": "sales",
+          "type": "quantitative",
+          "title": "销售额",
+          "legend": {"orient": "right"},
+          "scale": {
+            "scheme": "blues",
+            "domain": [500000, 12000000]
+          }
+        },
+        "tooltip": [
+          {"field": "properties.名称", "type": "nominal", "title": "省份"},
+          {"field": "sales", "type": "quantitative", "title": "销售额", "format": ","}
+        ]
+      }
+    }
+  },
+  "larger_map": {
+    "name": "大尺寸中国地图",
+    "description": "更大的地图尺寸，适合详细展示",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "width": 1200,
+      "height": 900,
+      "title": {
+        "text": "中国地图（大尺寸）",
+        "anchor": "middle",
+        "fontSize": 20,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "url": "https://unpkg.com/cn-atlas/cn-atlas.json",
+        "format": {
+          "type": "topojson",
+          "feature": "provinces"
+        }
+      },
+      "projection": {
+        "type": "mercator",
+        "center": [104, 35],
+        "scale": 800
+      },
+      "mark": {
+        "type": "geoshape",
+        "fill": "#f0f8ff",
+        "stroke": "#555",
+        "strokeWidth": 1
+      },
+      "encoding": {
+        "tooltip": [
+          {"field": "properties.名称", "type": "nominal", "title": "省份"},
+          {"field": "properties.地名", "type": "nominal", "title": "简称"},
+          {"field": "properties.区划码", "type": "nominal", "title": "区划码"}
+        ]
+      }
+    }
+  },
+  "market_coverage_map": {
+    "name": "市场覆盖率地图",
+    "description": "按市场覆盖率分类着色的地图（高/中/低）",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "width": 800,
+      "height": 600,
+      "title": {
+        "text": "全国市场覆盖率分布",
+        "subtitle": "红色=高覆盖率，黄色=中等，蓝色=低覆盖率",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "url": "https://unpkg.com/cn-atlas/cn-atlas.json",
+        "format": {
+          "type": "topojson",
+          "feature": "provinces"
+        }
+      },
+      "transform": [
+        {
+          "lookup": "properties.地名",
+          "from": {
+            "data": {
+              "values": [
+                {"province": "北京市", "coverage": "高"},
+                {"province": "上海市", "coverage": "高"},
+                {"province": "广东省", "coverage": "高"},
+                {"province": "浙江省", "coverage": "高"},
+                {"province": "江苏省", "coverage": "高"},
+                {"province": "四川省", "coverage": "中"},
+                {"province": "湖北省", "coverage": "中"},
+                {"province": "河南省", "coverage": "中"},
+                {"province": "福建省", "coverage": "中"},
+                {"province": "湖南省", "coverage": "中"},
+                {"province": "重庆市", "coverage": "中"},
+                {"province": "天津市", "coverage": "中"},
+                {"province": "辽宁省", "coverage": "中"},
+                {"province": "安徽省", "coverage": "低"},
+                {"province": "陕西省", "coverage": "低"},
+                {"province": "江西省", "coverage": "低"},
+                {"province": "广西壮族自治区", "coverage": "低"},
+                {"province": "云南省", "coverage": "低"},
+                {"province": "山西省", "coverage": "低"},
+                {"province": "吉林省", "coverage": "低"},
+                {"province": "贵州省", "coverage": "低"},
+                {"province": "内蒙古自治区", "coverage": "低"},
+                {"province": "新疆维吾尔自治区", "coverage": "低"},
+                {"province": "甘肃省", "coverage": "低"},
+                {"province": "黑龙江省", "coverage": "低"},
+                {"province": "海南省", "coverage": "低"},
+                {"province": "宁夏回族自治区", "coverage": "低"},
+                {"province": "青海省", "coverage": "低"},
+                {"province": "西藏自治区", "coverage": "低"}
+              ]
+            },
+            "key": "province",
+            "fields": ["coverage"]
+          }
+        }
+      ],
+      "projection": {
+        "type": "mercator",
+        "center": [104, 35],
+        "scale": 650
+      },
+      "mark": {
+        "type": "geoshape",
+        "stroke": "#fff",
+        "strokeWidth": 0.5
+      },
+      "encoding": {
+        "color": {
+          "field": "coverage",
+          "type": "nominal",
+          "title": "覆盖率",
+          "legend": {"orient": "right"},
+          "scale": {
+            "domain": ["高", "中", "低"],
+            "range": ["#d62728", "#ff7f0e", "#1f77b4"]
+          }
+        },
+        "tooltip": [
+          {"field": "properties.名称", "type": "nominal", "title": "省份"},
+          {"field": "coverage", "type": "nominal", "title": "覆盖率"}
+        ]
+      }
+    }
+  },
+  "champion_brand_map": {
+    "name": "冠军品牌地图",
+    "description": "多品牌地图，不同品牌用不同颜色，同一品牌内颜色深浅代表市占率。按照0-10%, 10-20%, 20-30%, 30-50%, 50-100%分档，无数据省份显示为白色。",
+    "spec": {
+      "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+      "width": 1000,
+      "height": 700,
+      "title": {
+        "text": "2025Q4低温酸奶冠军品牌地图",
+        "subtitle": "不同颜色代表不同品牌，颜色深浅代表市占率",
+        "anchor": "middle",
+        "fontSize": 18,
+        "fontWeight": "bold"
+      },
+      "data": {
+        "url": "https://unpkg.com/cn-atlas/cn-atlas.json",
+        "format": {
+          "type": "topojson",
+          "feature": "provinces"
+        }
+      },
+      "transform": [
+        {
+          "lookup": "properties.地名",
+          "from": {
+            "data": {
+              "values": [
+                {"province": "黑龙江省", "brand": "蒙牛", "market_share": 0.215, "market_share_pct": "21.5%"},
+                {"province": "吉林省", "brand": "蒙牛", "market_share": 0.192, "market_share_pct": "19.2%"},
+                {"province": "辽宁省", "brand": "蒙牛", "market_share": 0.184, "market_share_pct": "18.4%"},
+                {"province": "北京市", "brand": "蒙牛", "market_share": 0.171, "market_share_pct": "17.1%"},
+                {"province": "山东省", "brand": "蒙牛", "market_share": 0.150, "market_share_pct": "15.0%"},
+                {"province": "江苏省", "brand": "蒙牛", "market_share": 0.144, "market_share_pct": "14.4%"},
+                {"province": "安徽省", "brand": "蒙牛", "market_share": 0.189, "market_share_pct": "18.9%"},
+                {"province": "江西省", "brand": "蒙牛", "market_share": 0.222, "market_share_pct": "22.2%"},
+                {"province": "广西壮族自治区", "brand": "蒙牛", "market_share": 0.256, "market_share_pct": "25.6%"},
+                {"province": "天津市", "brand": "简醇", "market_share": 0.180, "market_share_pct": "18.0%"},
+                {"province": "山西省", "brand": "简醇", "market_share": 0.187, "market_share_pct": "18.7%"},
+                {"province": "河北省", "brand": "简醇", "market_share": 0.167, "market_share_pct": "16.7%"},
+                {"province": "陕西省", "brand": "简醇", "market_share": 0.149, "market_share_pct": "14.9%"},
+                {"province": "河南省", "brand": "花花牛", "market_share": 0.186, "market_share_pct": "18.6%"},
+                {"province": "上海市", "brand": "光明", "market_share": 0.275, "market_share_pct": "27.5%"},
+                {"province": "湖北省", "brand": "光明", "market_share": 0.206, "market_share_pct": "20.6%"},
+                {"province": "浙江省", "brand": "伊利", "market_share": 0.190, "market_share_pct": "19.0%"},
+                {"province": "福建省", "brand": "伊利", "market_share": 0.280, "market_share_pct": "28.0%"},
+                {"province": "湖南省", "brand": "卡士", "market_share": 0.208, "market_share_pct": "20.8%"},
+                {"province": "广东省", "brand": "卡士", "market_share": 0.184, "market_share_pct": "18.4%"},
+                {"province": "云南省", "brand": "欧亚", "market_share": 0.231, "market_share_pct": "23.1%"},
+                {"province": "贵州省", "brand": "山花", "market_share": 0.262, "market_share_pct": "26.2%"},
+                {"province": "重庆市", "brand": "天友", "market_share": 0.506, "market_share_pct": "50.6%"},
+                {"province": "四川省", "brand": "天友", "market_share": 0.186, "market_share_pct": "18.6%"}
+              ]
+            },
+            "key": "province",
+            "fields": ["brand", "market_share", "market_share_pct"]
+          }
+        },
+        {
+          "calculate": "datum.market_share < 0.10 ? '0-10%' : datum.market_share < 0.20 ? '10-20%' : datum.market_share < 0.30 ? '20-30%' : datum.market_share < 0.50 ? '30-50%' : '50-100%'",
+          "as": "share_range"
+        },
+        {
+          "calculate": "isValid(datum.brand) ? datum.brand + ' (' + datum.share_range + ')' : '无数据'",
+          "as": "brand_range"
+        }
+      ],
+      "projection": {
+        "type": "mercator",
+        "center": [104, 35],
+        "scale": 700
+      },
+      "mark": {
+        "type": "geoshape",
+        "stroke": "#000000",
+        "strokeWidth": 1.5
+      },
+      "encoding": {
+        "fill": {
+          "field": "brand_range",
+          "type": "nominal",
+          "legend": {
+            "orient": "right",
+            "title": "品牌 - 市占率",
+            "titleFontSize": 14,
+            "labelFontSize": 11,
+            "symbolType": "square"
+          },
+          "scale": {
+            "domain": [
+              "蒙牛 (10-20%)", "蒙牛 (20-30%)", "蒙牛 (30-50%)", "蒙牛 (50-100%)",
+              "简醇 (10-20%)", "简醇 (20-30%)", "简醇 (30-50%)", "简醇 (50-100%)",
+              "光明 (10-20%)", "光明 (20-30%)", "光明 (30-50%)", "光明 (50-100%)",
+              "伊利 (10-20%)", "伊利 (20-30%)", "伊利 (30-50%)", "伊利 (50-100%)",
+              "卡士 (10-20%)", "卡士 (20-30%)", "卡士 (30-50%)", "卡士 (50-100%)",
+              "天友 (10-20%)", "天友 (20-30%)", "天友 (30-50%)", "天友 (50-100%)",
+              "花花牛 (10-20%)", "花花牛 (20-30%)", "花花牛 (30-50%)", "花花牛 (50-100%)",
+              "欧亚 (10-20%)", "欧亚 (20-30%)", "欧亚 (30-50%)", "欧亚 (50-100%)",
+              "山花 (10-20%)", "山花 (20-30%)", "山花 (30-50%)", "山花 (50-100%)",
+              "无数据"
+            ],
+            "range": [
+              "#9ecae1", "#6baed6", "#3182bd", "#08519c",
+              "#fdd49e", "#fdae61", "#f46d43", "#d94801",
+              "#fbb4b9", "#f768a1", "#c51b7d", "#7a0177",
+              "#d8b5d8", "#998ec3", "#756bb1", "#54278f",
+              "#bae4b3", "#74c476", "#31a354", "#006d2c",
+              "#fcc5c0", "#f16968", "#d04026", "#8a0e0e",
+              "#c7e9c0", "#74c476", "#31a354", "#006d2c",
+              "#f0f0f0", "#d0d1e6", "#74a9cf", "#0570b0",
+              "#f7f7f7", "#cccccc", "#969696", "#525252",
+              "#ffffff"
+            ]
+          }
+        },
+        "tooltip": [
+          {"field": "properties.地名", "type": "nominal", "title": "省份"},
+          {"field": "brand", "type": "nominal", "title": "冠军品牌"},
+          {"field": "market_share_pct", "type": "nominal", "title": "市占率"}
+        ]
+      },
+      "config": {
+        "view": {"stroke": null}
+      }
+    }
+  }
+}
