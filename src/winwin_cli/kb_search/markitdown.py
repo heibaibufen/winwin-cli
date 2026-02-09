@@ -28,16 +28,22 @@ def run_markitdown(
     """
     # 优先尝试使用 Python 包
     try:
-        from markitdown import convert
+        from markitdown import MarkItDown
 
+        md = MarkItDown()
+        result = md.convert(str(input_path))
+
+        # 写入输出文件
         if output_path:
-            convert(input_path, output_path)
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(result.text_content)
             return output_path
         else:
             # 如果没有指定输出路径，生成默认路径
             input_path_obj = Path(input_path)
             output_path = str(input_path_obj.with_suffix(".md"))
-            convert(input_path, output_path)
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(result.text_content)
             return output_path
     except ImportError:
         # 回退到 uvx
