@@ -5,11 +5,12 @@ import sys
 import subprocess
 import tempfile
 import shutil
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import click
 import yaml
 import requests
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 
 @click.group()
@@ -40,8 +41,9 @@ def install(skill_spec: Optional[str], path: Optional[str], platform: Optional[s
 
     用法：
         winwin-cli skills install                           # 从配置列表交互式选择
-        winwin-cli skills install skill-name                # 使用简写名称安装
-        winwin-cli skills install owner/repo/skill-name     # 指定仓库和技能
+        winwin-cli skills install skill-name                # 使用简写名称（在所有分类中查找）
+        winwin-cli skills install category/skill-name       # 使用完整路径
+        winwin-cli skills install owner/repo/category/skill-name
         winwin-cli skills install https://github.com/...    # 使用完整 GitHub URL
         winwin-cli skills install skill-name --repo owner/custom-repo
         winwin-cli skills install skill-name --branch dev
@@ -56,6 +58,15 @@ def install(skill_spec: Optional[str], path: Optional[str], platform: Optional[s
             if not skill_spec:
                 click.echo("未选择技能", err=True)
                 sys.exit(1)
+
+        # 如果只输入了技能名称（没有 /），尝试在所有分类中查找
+        if skill_spec and "/" not in skill_spec and not skill_spec.startswith("https://"):
+            resolved_spec = _find_skill_by_name(skill_spec, ref, repo)
+            if resolved_spec:
+                click.echo(f"找到技能: {resolved_spec}")
+                skill_spec = resolved_spec
+            else:
+                click.echo(f"警告: 未找到技能 '{skill_spec}'，尝试直接下载...", err=True)
 
         # 解析技能规格并下载
         skill_temp_dir = _resolve_and_download_skill(skill_spec, ref, repo)
@@ -142,10 +153,13 @@ def list_cmd(output_json: bool, repo: Optional[str], ref: str):
                 click.echo(f"\n找到 {len(available_skills)} 个技能：\n")
                 for skill in available_skills:
                     category = skill.get("category", "")
+                    skill_name = skill['name']
                     if category:
-                        click.echo(f"📦 {skill['name']} ({category})")
+                        click.echo(f"📦 {skill_name} (分类: {category})")
+                        click.echo(f"   安装: winwin-cli skills install {category}/{skill_name}")
                     else:
-                        click.echo(f"📦 {skill['name']}")
+                        click.echo(f"📦 {skill_name}")
+                        click.echo(f"   安装: winwin-cli skills install {skill_name}")
                     click.echo(f"   描述: {skill.get('description', '无描述')}")
                     click.echo(f"   版本: {skill.get('version', 'N/A')}")
                     click.echo(f"   作者: {skill.get('author', 'N/A')}")
@@ -168,8 +182,22 @@ def list_cmd(output_json: bool, repo: Optional[str], ref: str):
     help="Git 分支或标签（默认: main）",
 )
 def info(skill_spec: str, repo: Optional[str], ref: str):
-    """显示技能详细信息（从 GitHub 仓库）"""
+    """显示技能详细信息（从 GitHub 仓库）
+
+    技能规格格式:
+    - category/skill-name (使用默认仓库)
+    - owner/repo/category/skill-name
+    - skill-name (在所有分类中查找)
+    """
     try:
+        # 如果只输入了技能名称（没有 /），尝试在所有分类中查找
+        if "/" not in skill_spec:
+            skill_spec = _find_skill_by_name(skill_spec, ref, repo)
+            if not skill_spec:
+                click.echo(f"错误: 未找到技能 '{skill_spec}'", err=True)
+                click.echo(f"提示: 使用 'winwin-cli skills list' 查看所有可用技能", err=True)
+                sys.exit(1)
+
         # 下载技能到临时目录
         skill_temp_dir = _resolve_and_download_skill(skill_spec, ref, repo)
         if not skill_temp_dir:
@@ -210,6 +238,40 @@ def info(skill_spec: str, repo: Optional[str], ref: str):
     except Exception as e:
         click.echo(f"错误: {e}", err=True)
         sys.exit(1)
+
+
+def _find_skill_by_name(skill_name: str, ref: str, repo_override: Optional[str]) -> Optional[str]:
+    """在所有分类中查找指定名称的技能
+
+    返回完整的技能规格 (如: category/skill-name)
+    """
+    try:
+        default_repo = repo_override or _get_default_skills_repo()
+        all_skills = _list_github_skills(default_repo, ref)
+
+        # 查找匹配的技能
+        for skill in all_skills:
+            if skill.get("name") == skill_name:
+                category = skill.get("category", "")
+                if category:
+                    return f"{default_repo}/{category}/{skill_name}"
+                else:
+                    return f"{default_repo}/{skill_name}"
+
+        # 如果没有找到精确匹配，尝试模糊匹配
+        for skill in all_skills:
+            if skill_name.lower() in skill.get("name", "").lower():
+                category = skill.get("category", "")
+                if category:
+                    return f"{default_repo}/{category}/{skill['name']}"
+                else:
+                    return f"{default_repo}/{skill['name']}"
+
+        return None
+
+    except Exception as e:
+        click.echo(f"查找技能失败: {e}", err=True)
+        return None
 
 
 def _get_default_skills_repo() -> str:
@@ -320,47 +382,87 @@ def _resolve_and_download_skill(skill_spec: str, ref: str, repo_override: Option
 
 
 def _download_skill_from_github(owner: str, repo: str, skill_path: str, ref: str = "main") -> Optional[Path]:
-    """从 GitHub 下载技能目录到临时目录
+    """从 GitHub 下载技能目录到临时目录（使用并发下载加速）
 
-    使用 GitHub API 获取目录内容并递归下载
+    使用 GitHub API 获取目录内容并使用并发下载
     """
     temp_dir = Path(tempfile.mkdtemp(prefix="winwin_skill_"))
 
     try:
-        api_base = f"https://api.github.com/repos/{owner}/{repo}/contents/{skill_path}"
+        # 首先收集所有需要下载的文件
+        files_to_download = []
 
-        def _download_directory(api_url: str, local_dir: Path):
-            """递归下载目录"""
+        def _collect_files(api_url: str, local_dir: Path):
+            """递归收集所有文件"""
             response = requests.get(api_url, params={"ref": ref}, timeout=30)
             response.raise_for_status()
 
             items = response.json()
 
             if not isinstance(items, list):
-                # 如果是单个文件
                 items = [items]
 
             for item in items:
                 if item.get("type") == "file":
-                    # 下载文件
                     download_url = item.get("download_url")
                     if download_url:
-                        file_response = requests.get(download_url, timeout=30)
-                        file_response.raise_for_status()
-
                         file_path = local_dir / item["name"]
-                        file_path.parent.mkdir(parents=True, exist_ok=True)
-
-                        with open(file_path, "wb") as f:
-                            f.write(file_response.content)
-                        click.echo(f"  ✓ {item['path']}")
+                        files_to_download.append((download_url, file_path, item.get("path", item["name"])))
 
                 elif item.get("type") == "dir":
-                    # 递归下载子目录
                     sub_dir = local_dir / item["name"]
-                    _download_directory(item["url"], sub_dir)
+                    _collect_files(item["url"], sub_dir)
 
-        _download_directory(api_base, temp_dir)
+        # 收集所有文件
+        api_base = f"https://api.github.com/repos/{owner}/{repo}/contents/{skill_path}"
+        click.echo(f"正在分析技能目录结构...")
+        _collect_files(api_base, temp_dir)
+
+        if not files_to_download:
+            click.echo(f"错误: 未找到任何文件", err=True)
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            return None
+
+        # 使用并发下载
+        click.echo(f"正在下载 {len(files_to_download)} 个文件...")
+
+        def _download_file(args: Tuple[str, Path, str]) -> Tuple[bool, str]:
+            """下载单个文件"""
+            download_url, file_path, display_path = args
+            try:
+                response = requests.get(download_url, timeout=30)
+                response.raise_for_status()
+
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+
+                with open(file_path, "wb") as f:
+                    f.write(response.content)
+
+                return (True, display_path)
+            except Exception as e:
+                return (False, f"{display_path}: {e}")
+
+        # 使用线程池并发下载（最多 10 个并发）
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(_download_file, args): args for args in files_to_download}
+
+            completed = 0
+            failed = 0
+
+            for future in as_completed(futures):
+                completed += 1
+                success, result = future.result()
+
+                if success:
+                    # 每下载 10% 显示一次进度
+                    if completed % max(1, len(files_to_download) // 10) == 0 or completed == len(files_to_download):
+                        click.echo(f"  进度: {completed}/{len(files_to_download)} 文件已完成")
+                else:
+                    failed += 1
+                    click.echo(f"  ✗ 下载失败: {result}", err=True)
+
+        if failed > 0:
+            click.echo(f"警告: {failed} 个文件下载失败", err=True)
 
         # 验证 SKILL.md 是否存在
         skill_md = temp_dir / "SKILL.md"
